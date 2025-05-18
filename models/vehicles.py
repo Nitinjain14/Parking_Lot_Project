@@ -1,18 +1,18 @@
 # creating class Vehicle
 class Vehicle:
-    #Private members
-    __regno = None
-    __color = None
-    #constructor
     def __init__(self, regno, color):
-        self.__regno = regno
-        self.__color = color
+        self._regno = regno
+        self._color = color
 
-    def get_regno(self):
-        return self.__regno
-
-    def get_color(self):
-        return self.__color
-
-    def get_info(self):
-        return [self.__regno, self.__color]
+    @property
+    def regno(self):
+        return self._regno
+    @property
+    def color(self):
+        return self._color
+    @regno.setter
+    def regno(self, regno):
+        self._regno = regno
+    @color.setter
+    def color(self, color):
+        self._color = color

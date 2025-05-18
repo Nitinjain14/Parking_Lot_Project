@@ -1,62 +1,43 @@
 from Parking_Lot_project.services.parking_service import ParkingLot
+from Parking_Lot_project.models.command import Command
 
 def handle_command(file_path):
     with open(file_path, "r") as file:
-        data = file.read().replace("\n", " ")  # replace newline with space for split function
-    data_ls = data.split(" ")
-    ParkingLot_capacity = ParkingLot(int(data_ls[1]))
-    print(f"Created a parking lot with {ParkingLot_capacity.capacity} slots")
+        lines = [line.strip() for line in file.readlines() if line.strip()]
 
-    # main loop
-    print(data_ls)
-    j = 0
-    i = 2
-    while i < len(data_ls):
-        if data_ls[i] == "park":
-            slot = ParkingLot_capacity.park_vehicle(j, data_ls[i + 1], data_ls[i + 2])
+    parking_lot_val = None
+    for line in lines:
+        command = Command.from_string(line)
+
+        if command.action == "create_parking_lot":
+            parking_lot_val = ParkingLot(command.capacity)
+            print(f"Created a parking lot with {parking_lot_val.capacity} slots")
+
+        elif command.action == "park":
+            slot = parking_lot_val.park_vehicle(command.reg_no, command.color)
             if slot == -1:
                 print("Sorry, parking lot is full")
             else:
                 print(f"Allocated Slot number: {slot}")
-            i += 3
-            j += 1
 
-        elif data_ls[i] == "leave":
-            slot = ParkingLot_capacity.remove_vehicle(int(data_ls[i + 1]))
-            print(f"Slot number {slot} is free")
-            i += 2
-
-        elif data_ls[i] == "status":
-            vehicles_status = ParkingLot_capacity.status_all_vehicle()
-            if not vehicles_status:
-                print("Parking lot is empty")
+        elif command.action == "leave":
+            slot = parking_lot_val.remove_vehicle(command.slot_no)
+            if slot == -1:
+                print("Vehicle not found")
             else:
-                print("Slot No.\tReg No\t\t\tColor")
-                for v in range(len(vehicles_status)):
-                    print(vehicles_status[v][0], "\t\t", vehicles_status[v][1], "\t\t", vehicles_status[v][2])
-            i += 1
+                print(f"Slot number {slot} is free")
 
-        elif data_ls[i] == "slot_numbers_for_cars_with_colour":
-            slot_clr = ParkingLot_capacity.slot_of_coloured_vehicle(data_ls[i + 1])
-            if not slot_clr:
-                print("Not found")
-            else:
-                for c in range(len(slot_clr)):
-                    print(slot_clr[c], end=" ")
-                print()
-            i += 2
+        elif command.action == "status":
+            parking_lot_val.status_all_vehicle()
 
-        elif data_ls[i] == "slot_number_for_registration_number":
-            slot_reg = ParkingLot_capacity.slot_of_regno_vehicle(data_ls[i + 1])
-            print(slot_reg)
-            i += 2
+        elif command.action == "slot_numbers_for_cars_with_colour":
+            slot = parking_lot_val.slot_of_coloured_vehicle(command.color)
+            print(", ".join(map(str, slot)) if slot else "Not found")
 
-        elif data_ls[i] == "registration_numbers_for_cars_with_colour":
-            cars_name = ParkingLot_capacity.regno_of_colored_vehicle(data_ls[i + 1])
-            if not cars_name:
-                print("Not found")
-            else:
-                for c in range(len(cars_name)):
-                    print(cars_name[c], end=" ")
-                print()
-            i += 2
+        elif command.action == "slot_number_for_registration_number":
+            slot = parking_lot_val.slot_of_regno_vehicle(command.reg_no)
+            print(slot if slot != -1 else "Not found")
+
+        elif command.action == "registration_numbers_for_cars_with_colour":
+            reg_nos = parking_lot_val.regno_of_colored_vehicle(command.color)
+            print(", ".join(reg_nos) if reg_nos else "Not found")
