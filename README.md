@@ -8,7 +8,4 @@ A simple terminal-based Parking Lot Management System written in Python.
 - Get status of parking lot
 - Query based on vehicle color or registration number
 
-## How to Run
 
-```bash
-python main.py input.txt
